@@ -32,7 +32,7 @@ The token from API Setup dies within 24 hours, which is no good for a server. Ma
    - `APP_SECRET` (recommended): Meta app → **App settings → Basic → App secret**. With it set, the bot ignores requests that didn't come from Meta.
 
    `.env` is in `.gitignore`, so your secrets never reach GitHub.
-2. In ZimaOS, open the **App Store**, click **+** (top right), then **Install a customized app**. Click **Import** and paste `docker-compose.yml`. If port `3077` is already used by another server, change it there.
+2. On the ZimaOS dashboard, click **+** next to **Apps**, then **Install Custom App**. Click **Import** and paste `docker-compose.yml`. If port `3077` is already used by another server, change it there.
 3. Install. On the laptop, open `http://localhost:3077` (or the laptop's IP with port 3077). It should say **WhatsApp bot is running**.
 
 ## 4. Point your domain at it (Cloudflare Tunnel)
