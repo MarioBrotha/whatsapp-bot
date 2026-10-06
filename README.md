@@ -35,14 +35,18 @@ The token from API Setup dies within 24 hours, which is no good for a server. Ma
 2. In ZimaOS, open the **App Store**, click **+** (top right), then **Install a customized app**. Click **Import** and paste `docker-compose.yml`. If port `3077` is already used by another server, change it there.
 3. Install. On the laptop, open `http://localhost:3077` (or the laptop's IP with port 3077). It should say **WhatsApp bot is running**.
 
-## 4. Point your domain at it
+## 4. Point your domain at it (Cloudflare Tunnel)
 
-Meta only talks to **https** addresses with a real certificate. Point a subdomain, for example `wa.yourdomain.com`, at port 3077, the same way your other servers are exposed:
+Meta only talks to **https** addresses with a real certificate. A Cloudflare Tunnel provides that with no router changes. Your existing DNS records (like the Minecraft one) stay as they are.
 
-- **Nginx Proxy Manager**: add a Proxy Host. Domain `wa.yourdomain.com`, forward to the laptop IP on port `3077`. On the SSL tab, request a Let's Encrypt certificate.
-- **Cloudflare Tunnel**: add a public hostname `wa.yourdomain.com` pointing to the service `http://localhost:3077`.
+1. In the Cloudflare dashboard, open **Zero Trust** (choose the Free plan if it asks), then **Networks → Tunnels → Create a tunnel**. Pick **Cloudflared** and name it, for example `zima`.
+2. On the install screen, copy the long token after `--token`. Paste it into `cloudflared-compose.yml` from this repo, and import that file into ZimaOS as a custom app, the same way as step 3. Back in Cloudflare, the tunnel should show **Healthy**.
+3. Click **Next** (or the tunnel's **Public hostname** tab) and add:
+   - Subdomain `wa`, your domain
+   - Service type **HTTP**, URL `localhost:3077`
+4. From your phone, with Wi-Fi off, open `https://wa.yourdomain.com`. It should say **WhatsApp bot is running**.
 
-Check that `https://wa.yourdomain.com` shows **WhatsApp bot is running** from your phone, with Wi-Fi off.
+Cloudflare creates the `wa` DNS record for you, so you don't add it by hand. Keep the tunnel token private, since it works like a password.
 
 ## 5. Connect it to Meta
 

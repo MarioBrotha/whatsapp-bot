@@ -1,0 +1,10 @@
+# Cloudflare Tunnel: gives the bot a public https address without opening router ports.
+# Paste your tunnel token below, then import this into ZimaOS as a custom app.
+name: cloudflared
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    network_mode: host   # lets the tunnel reach the bot at localhost:3077
+    command: tunnel --no-autoupdate run --token PASTE_YOUR_TUNNEL_TOKEN
