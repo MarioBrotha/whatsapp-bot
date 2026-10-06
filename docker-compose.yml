@@ -1,0 +1,14 @@
+name: whatsapp-bot
+services:
+  whatsapp-bot:
+    image: node:22-alpine
+    container_name: whatsapp-bot
+    restart: unless-stopped
+    working_dir: /app
+    command: node bot.js
+    ports:
+      - "3077:3000"   # laptop port 3077 -> bot. Change 3077 if it's taken.
+    volumes:
+      - /DATA/AppData/whatsapp-bot:/app
+    env_file:
+      - /DATA/AppData/whatsapp-bot/.env   # your secrets live here, never in git
