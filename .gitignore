@@ -1,3 +1,4 @@
 .env
 connected.json
-node_modules/
+bin/
+obj/

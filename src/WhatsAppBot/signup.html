@@ -1,0 +1,38 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connect WhatsApp</title>
+<style>body{font-family:system-ui,sans-serif;max-width:520px;margin:40px auto;padding:0 16px}button{font-size:18px;padding:12px 20px;background:#1877f2;color:#fff;border:0;border-radius:8px;cursor:pointer}#log{white-space:pre-wrap;margin-top:20px}</style>
+</head><body>
+<h1>Connect your WhatsApp Business app</h1>
+<p>Click the button, choose to connect your existing WhatsApp Business app, enter the number, and scan the QR code with the app on your phone.</p>
+<button onclick="start()">Connect WhatsApp</button>
+<div id="log"></div>
+<script>
+const log = (t) => (document.getElementById("log").textContent += t + "\n");
+let ids = null, code = null;
+window.fbAsyncInit = () => FB.init({ appId: "{{APP_ID}}", autoLogAppEvents: true, xfbml: true, version: "{{GRAPH_VERSION}}" });
+window.addEventListener("message", (e) => {
+  if (!e.origin.endsWith("facebook.com")) return;
+  try {
+    const d = JSON.parse(e.data);
+    if (d.type !== "WA_EMBEDDED_SIGNUP") return;
+    if (d.event && d.event.startsWith("FINISH")) { ids = d.data; finish(); }
+    else if (d.event === "CANCEL") log("Stopped at: " + (d.data.current_step || "unknown step"));
+    else if (d.event === "ERROR") log("Meta error: " + d.data.error_message);
+  } catch {}
+});
+function start() {
+  FB.login((r) => { if (r.authResponse) { code = r.authResponse.code; finish(); } else log("Popup closed."); }, {
+    config_id: "{{CONFIG_ID}}", response_type: "code", override_default_response_type: true,
+    extras: { setup: {}, featureType: "whatsapp_business_app_onboarding", sessionInfoVersion: "3" },
+  });
+}
+async function finish() {
+  if (!ids || !code) return;
+  log("Connecting...");
+  const r = await fetch("signup/complete", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code, waba_id: ids.waba_id, phone_number_id: ids.phone_number_id }) });
+  log(await r.text());
+}
+</script>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+</body></html>

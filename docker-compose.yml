@@ -1,14 +1,20 @@
+# Runs the C# bot straight from this folder with the official .NET SDK image.
+# No build step: after `git pull`, restart the app and it recompiles on start.
 name: whatsapp-bot
 services:
   whatsapp-bot:
-    image: node:22-alpine
+    image: mcr.microsoft.com/dotnet/sdk:10.0
     container_name: whatsapp-bot
     restart: unless-stopped
     working_dir: /app
-    command: node bot.js
+    command: dotnet run --project src/WhatsAppBot -c Release
     ports:
       - "3077:3000"   # laptop port 3077 -> bot. Change 3077 if it's taken.
     volumes:
       - /DATA/AppData/whatsapp-bot:/app
+    environment:
+      DATA_DIR: /app
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
     env_file:
       - /DATA/AppData/whatsapp-bot/.env   # your secrets live here, never in git

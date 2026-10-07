@@ -1,0 +1,5 @@
+bin/
+obj/
+.env
+connected.json
+.git

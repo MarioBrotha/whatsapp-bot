@@ -9,14 +9,35 @@ A small bot that answers WhatsApp messages with chat options:
 - When you reply to a customer from the WhatsApp Business app, the bot goes quiet with that customer for 2 hours (`HUMAN_PAUSE_MINUTES`), so it never talks over you.
 - Free text sent right after the menu is left for you to answer in the app. Customers can type **menu** anytime to bring the bot back.
 
-It's one file (`bot.js`) with no packages to install. It runs in the stock `node:22-alpine` Docker image. Edit the texts at the top of `bot.js` to change what it says.
+It's a small C# / ASP.NET Core app (.NET 10) with no NuGet packages:
+
+| File | What it does |
+|---|---|
+| `src/WhatsAppBot/Messages.cs` | Everything the bot says. Edit this to change the menu, prices and hours. |
+| `src/WhatsAppBot/Bot.cs` | Decides what to answer, and when to stay quiet for a human. |
+| `src/WhatsAppBot/Program.cs` | Web endpoints: `/webhook`, `/signup`, signature check. |
+| `src/WhatsAppBot/GraphClient.cs` | Sends messages through Meta's Graph API. |
+| `src/WhatsAppBot/Signup.cs` | Connects your WhatsApp Business app number (step 6). |
+
+ZimaOS runs it straight from source with the official .NET SDK image, so there's no build step. The first start takes about half a minute while it compiles.
+
+**Run it on your PC** (needs the .NET 10 SDK), in PowerShell:
+
+```powershell
+$env:VERIFY_TOKEN="test"; $env:WA_TOKEN="your-token"; $env:PHONE_NUMBER_ID="1336051249594915"; $env:DATA_DIR="."
+dotnet run --project src/WhatsAppBot
+```
+
+Then open http://localhost:3000. Or open the folder in Visual Studio / Rider and run it from there.
+
+The `Dockerfile` builds a smaller production image if you'd rather not run from source later. It's optional.
 
 ## 1. Put the bot on the laptop
 
 The bot lives in `/DATA/AppData/whatsapp-bot` on the laptop.
 
 - **With git** (SSH into the laptop): `git clone https://github.com/MarioBrotha/whatsapp-bot /DATA/AppData/whatsapp-bot`. To update it later, run `git pull` in that folder, then restart the app.
-- **Without git**: in the ZimaOS **Files** app, create `AppData/whatsapp-bot` and upload `bot.js` and `.env.example` into it.
+- **Without git**: download the repo as a ZIP from GitHub, then in the ZimaOS **Files** app create `AppData/whatsapp-bot` and upload the `src` folder and `.env.example` into it.
 
 ## 2. Get a token that doesn't expire
 
@@ -36,7 +57,7 @@ The token from API Setup dies within 24 hours, which is no good for a server. Ma
 
    `.env` is in `.gitignore`, so your secrets never reach GitHub.
 2. On the ZimaOS dashboard, click **+** next to **Apps**, then **Install Custom App**. Click **Import** and paste `docker-compose.yml`. If port `3077` is already used by another server, change it there.
-3. Install. On the laptop, open `http://localhost:3077` (or the laptop's IP with port 3077). It should say **WhatsApp bot is running**.
+3. Install. Give it about half a minute to compile the first time, then open `http://localhost:3077` (or the laptop's IP with port 3077). It should say **WhatsApp bot is running**.
 
 ## 4. Point your domain at it (Cloudflare Tunnel)
 
@@ -90,6 +111,6 @@ To go back to the test number, delete `connected.json` and restart.
 - **Verify and save** fails: the verify word doesn't match `VERIFY_TOKEN`, or the https address isn't reachable from outside.
 - Nothing in the logs when you message: the **messages** webhook field isn't subscribed.
 - `Rejected request with bad signature`: `APP_SECRET` is wrong. Fix it, or leave it empty.
-- You change `bot.js` or `.env`: restart the app in ZimaOS.
+- You change the code or `.env`: restart the app in ZimaOS. It recompiles on start, and compile errors show in the logs.
 - The bot never answers after you've replied from the app: check the logs. If it pauses after its own messages too, set `HUMAN_PAUSE_MINUTES=0` and tell Claude.
 - The signup popup says the domain isn't allowed: recheck the domains in step 6.2.
